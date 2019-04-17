@@ -4,9 +4,8 @@
     height: 330px;
     position: relative;
 }
-#carousel-images{
+#carousel-wrapper{
     position: absolute;
-    width: 2880px;
 }
 
 .carousel-image{
