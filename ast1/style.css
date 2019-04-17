@@ -1,10 +1,10 @@
-.container{
+#container{
     overflow: hidden;
     width: 960px;
     height: 330px;
     position: relative;
 }
-#carousel-wrapper{
+#carouselWrapper{
     position: absolute;
 }
 
