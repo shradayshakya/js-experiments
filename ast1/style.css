@@ -1,0 +1,16 @@
+.container{
+    overflow: hidden;
+    width: 960px;
+    height: 330px;
+    position: relative;
+}
+#carousel-images{
+    position: absolute;
+    width: 2880px;
+}
+
+.carousel-image{
+    float: left;
+}
+
+
