@@ -1,7 +1,7 @@
 //Constants declaration and assignment
 var IMAGE_WIDTH = 960;
-var LEFT_TO_RIGHT_SPEED = -10; //Less is more
-var RIGHT_TO_LEFT_SPEED = 50;
+var AUTO_TRANS_SPEED = 10;
+var EVENT_TRANS_SPEED = 50;
 var PAUSE_DURATION = 500; //In milliseconds
 
 //Variables declaration and assignment
@@ -12,32 +12,21 @@ var minLeft = -(totalWrapperWidth - IMAGE_WIDTH);
 wrapper.style.width = totalWrapperWidth + "px";
 var leftPosition = 0;
 var offset;
-var isLeftToRight;
 var requestId;
-var indicatorButtons=[];
+var indicatorButtons = [];
 var leftButton;
 var rightButton;
-
-//Buttons setup BEGIN
-leftButton = createButtonWithImage("left.png","left-click.png", 50, 50 , 0 , 40);
-container.appendChild(leftButton);
-
-rightButton = createButtonWithImage("right.png","right-click.png", 50 , 50 , 95 , 40);
-container.appendChild(rightButton);
-
-for(var i=0; i< wrapper.childElementCount; i++){
-  indicatorButtons.push(createButtonWithImage("icon-circle.png","icon-circle-click.png",20,20,50+(i*2),90));
-  container.appendChild(indicatorButtons[i]);
-}
-//Buttons setup END
+var eventState;
+var eventTravelPosition;
+ var isLeftToRight;
 
 
 // Carousel images transition BEGIN
 
-//Starts the tranisition animation 
+//Starts the tranisition animation
 function startTransition() {
   slide();
-  if (leftPosition % IMAGE_WIDTH == 0 && isLeftToRight) {
+  if (leftPosition % IMAGE_WIDTH == 0 && !eventState) {
     pauseTransition(requestId);
   } else {
     requestId = requestAnimationFrame(startTransition);
@@ -46,26 +35,35 @@ function startTransition() {
 
 //Slides the wrapper left or right and pauses if leftPosition is zero
 function slide() {
-  if (leftPosition <= minLeft) {
-    offset = RIGHT_TO_LEFT_SPEED;
+  if(eventState){
+    var deviation = Math.abs(leftPosition - eventTravelPosition);
+    console.log("Left Position:"+leftPosition+"   ||||||| Event Travel Position:"+ eventTravelPosition + " ||||||| Deviation:"+deviation);
+    if(deviation < IMAGE_WIDTH){
+      eventState = false;
+    }
+  }
+
+  if (leftPosition >= 0) {
+    offset = (eventState)? -EVENT_TRANS_SPEED: -AUTO_TRANS_SPEED;
     isLeftToRight = false;
-  } else if (leftPosition >= 0) {
-    offset = LEFT_TO_RIGHT_SPEED  ;
+  }else if (leftPosition <= minLeft) {
+    offset = (eventState)? EVENT_TRANS_SPEED: AUTO_TRANS_SPEED;
     isLeftToRight = true;
   }
 
-  if (leftPosition == 0) {
+  if (leftPosition == 0 && !eventState) {
     setTimeout(function() {
-      updateWrapperPosition();
+      leftPosition += offset;
+      updateWrapperPosition(leftPosition);
     }, PAUSE_DURATION);
   } else {
-    updateWrapperPosition();
+     leftPosition += offset;
+      updateWrapperPosition(leftPosition);
   }
 }
 
 //Updates wrapper position
-function updateWrapperPosition() {
-  leftPosition += offset;
+function updateWrapperPosition(leftPosition) {
   wrapper.style.left = leftPosition + "px";
 }
 
@@ -80,34 +78,109 @@ function pauseTransition(requestId) {
 // Carousel images transition animation END
 
 //Returns an image button element with different image when clicked
-function createButtonWithImage(imageName, clickImageName, width, height, leftPositionInPercent, topPositionInPercent){
+
+
+//Buttons setup BEGIN
+
+//LEFT BUTTON
+leftButton = createButtonWithImage("left.png", "left-click.png", 50, 50, 0, 40);
+
+leftButton.onclick = function(){
+  leftPosition = (leftPosition >= -IMAGE_WIDTH)? minLeft:(leftPosition - (leftPosition % IMAGE_WIDTH)) + IMAGE_WIDTH; 
+  updateWrapperPosition(leftPosition);
+}
+container.appendChild(leftButton);
+
+//RIGHT BUTTON
+rightButton = createButtonWithImage(
+  "right.png",
+  "right-click.png",
+  50,
+  50,
+  95,
+  40
+);
+
+rightButton.onclick = function() {
+  leftPosition = (leftPosition <= (minLeft-IMAGE_WIDTH))? 0: (leftPosition - (leftPosition % IMAGE_WIDTH)) - IMAGE_WIDTH; 
+  console.log(leftPosition);
+  updateWrapperPosition(leftPosition);
+};
+container.appendChild(rightButton);
+
+
+//INDICATOR BUTTONS
+for (i = 0; i < wrapper.childElementCount; i++) {
+  indicatorButtons.push(
+    createButtonWithImage(
+      "icon-circle.png",
+      "icon-circle-click.png",
+      20,
+      20,
+      50 + i * 2,
+      90
+    )
+  ); 
+}
+
+indicatorButtons[0].onclick = function(){
+  leftPosition = 0 * (-IMAGE_WIDTH);
+  updateWrapperPosition(leftPosition);
+}
+container.appendChild(indicatorButtons[0]);
+
+indicatorButtons[1].onclick = function(){
+  leftPosition = 1 * (-IMAGE_WIDTH);
+  updateWrapperPosition(leftPosition);
+}
+container.appendChild(indicatorButtons[1]);
+
+indicatorButtons[2].onclick = function(){
+  leftPosition = 2 * (-IMAGE_WIDTH);
+  updateWrapperPosition(leftPosition);
+}
+container.appendChild(indicatorButtons[2]);
+
+
+//Buttons setup END
+
+function createButtonWithImage(
+  imageName,
+  clickImageName,
+  width,
+  height,
+  leftPositionInPercent,
+  topPositionInPercent
+) {
   var button = document.createElement("button");
   button.style.backgroundColor = "transparent";
   button.style.border = "none";
   button.style.width = width + "px";
   button.style.height = height + "px";
-  button.onfocus = function(){
+  button.onfocus = function() {
     button.style.outline = "0";
-  }
+  };
   var image = document.createElement("img");
-  image.setAttribute("src","images/"+imageName);
+  image.setAttribute("src", "images/" + imageName);
   image.style.width = "100%";
   button.appendChild(image);
 
-  button.style.position= "absolute";
-  button.style.left = leftPositionInPercent+'%';
-  button.style.top = topPositionInPercent+'%';
-  button.onmousedown= function(){
-    button.childNodes[0].setAttribute("src",'images/'+clickImageName);
+  button.style.position = "absolute";
+  button.style.left = leftPositionInPercent + "%";
+  button.style.top = topPositionInPercent + "%";
+
+  button.onmouseleave = function() {
+    button.childNodes[0].setAttribute("src", "images/" + imageName);
   };
-  button.onmouseup= function(){
-  button.childNodes[0].setAttribute("src",'images/'+imageName);
+  button.onmouseenter = function() {
+    button.childNodes[0].setAttribute("src", "images/" + clickImageName);
   };
+
+  
+
+
   return button;
 }
-
-
-
 
 startTransition();
 
