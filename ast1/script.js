@@ -115,8 +115,28 @@ class Carousel {
     this.rightButton.onclick = this.next.bind(this);
     this.containerElement.appendChild(this.rightButton);
   }
+  
+  indicatorButtonsSetup() {
+    this.indicatorButtons = [];
+    for (let i = 0; i < this.images.length; i++) {
+      let button = new ImageButton(
+        "icon-circle.png",
+        "icon-circle-click.png",
+        20,
+        20,
+        50 + i * 2,
+        90
+      ).getButton();
+      button.index = i;
+      button.onclick = function(){this.indicatorEvent(button)}.bind(this);
+      this.indicatorButtons.push(button);
+      container.appendChild(button);
+    }
+  }
 
+  //triggers when left button is clicked
   back() {
+    console.log(this.counter); 
     if (!this.transitionState) {
       if(this.counter==1){
         this.counter = this.numberOfImagesIncludingFakes - 1;
@@ -130,10 +150,12 @@ class Carousel {
     }
   }
 
+  //triggers when right button is clicked
   next() {
+    console.log(this.counter); 
     if (!this.transitionState) {
-      if(this.counter == (this.numberOfImagesIncludingFakes -1)){
-        this.counter = 1;
+      if(this.counter == (this.numberOfImagesIncludingFakes -2)){
+        this.counter = 0;
         this.currentPosition = this.counter * -this.windowSize;
         this.updateWrapperPosition();
       }
@@ -144,22 +166,17 @@ class Carousel {
     }
   }
 
-  indicatorButtonsSetup() {
-    this.indicatorButtons = [];
-    for (let i = 0; i < this.images.length; i++) {
-      let button = new ImageButton(
-        "icon-circle.png",
-        "icon-circle-click.png",
-        20,
-        20,
-        50 + i * 2,
-        90
-      ).getButton();
-      button.index = i;
-      this.indicatorButtons.push(button);
-      container.appendChild(button);
+  //triggers when one of the indicator button is clicked
+  indicatorEvent(triggeringIndicator){
+    console.log(this.counter); 
+    if (!this.transitionState) {
+      this.transitionState = true;
+      this.counter = triggeringIndicator.index + 1;
+      this.slideToNewPosition(this.counter * -this.windowSize);
     }
   }
+
+
 
   slideToNewPosition(newPosition) {
     if (this.getDistanceFromCurrentPosition(newPosition) === 0) {
@@ -194,4 +211,4 @@ class Carousel {
 }
 
 let carouselContainer = document.getElementById("container");
-let carousel = new Carousel(carouselContainer, 10);
+let carousel = new Carousel(carouselContainer, 30);
