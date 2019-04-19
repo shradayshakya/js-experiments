@@ -66,7 +66,7 @@ class Carousel {
     this.images = this.containerElement.querySelectorAll("img");
     this.numberOfImages = this.images.length;
 
-    //ADDING FIRST IMAGE AT THE BACK AND LAST IMAGE AT THE FIRST FOR LOOP EFFECT IN CAROUSEL
+    //ADDING FAKE FIRST IMAGE AT THE BACK AND FAKR LAST IMAGE AT THE FIRST FOR LOOP EFFECT IN CAROUSEL
     let fakeFirstImage =  this.images[0].cloneNode(true);
     let fakeLastImage = this.images[this.numberOfImages-1].cloneNode(true);
     this.wrapperElement.insertBefore(fakeLastImage, this.images[0]);
@@ -87,6 +87,22 @@ class Carousel {
     this.rightButtonSetup();
     this.updateWrapperPosition();
     this.indicatorButtonsSetup();
+    this.slideShow();
+  }
+
+  slideShow(){
+    this.slideShowId = setInterval(()=>{
+      if (!this.transitionState) {
+        if(this.counter == (this.numberOfImagesIncludingFakes -2)){
+          this.counter = 0;
+          this.currentPosition = this.counter * -this.windowSize;
+          this.updateWrapperPosition();
+        }
+        this.transitionState = true;
+        this.counter++;
+        this.slideToNewPosition(this.counter * -this.windowSize,0.5);
+      }
+    },3000);
   }
 
   leftButtonSetup() {
@@ -152,7 +168,6 @@ class Carousel {
 
   //triggers when right button is clicked
   next() {
-    console.log(this.counter); 
     if (!this.transitionState) {
       if(this.counter == (this.numberOfImagesIncludingFakes -2)){
         this.counter = 0;
@@ -168,29 +183,28 @@ class Carousel {
 
   //triggers when one of the indicator button is clicked
   indicatorEvent(triggeringIndicator){
-    console.log(this.counter); 
     if (!this.transitionState) {
       this.transitionState = true;
       this.counter = triggeringIndicator.index + 1;
-      this.slideToNewPosition(this.counter * -this.windowSize);
+      this.slideToNewPosition(this.counter * -this.windowSize, 2);
     }
   }
 
 
 
-  slideToNewPosition(newPosition) {
+  slideToNewPosition(newPosition, velocityMultiplier = 1) {
     if (this.getDistanceFromCurrentPosition(newPosition) === 0) {
       this.transitionState = false;
       cancelAnimationFrame(this.rafID);
     } else {
       if (newPosition > this.currentPosition) {
-        this.currentPosition += this.transitionVelocity;
+        this.currentPosition += this.transitionVelocity * velocityMultiplier;
       } else {
-        this.currentPosition -= this.transitionVelocity;
+        this.currentPosition -= this.transitionVelocity * velocityMultiplier;
       }
       this.updateWrapperPosition();
       this.rafID = requestAnimationFrame(() =>
-        this.slideToNewPosition(newPosition)
+        this.slideToNewPosition(newPosition, velocityMultiplier)
       );
     }
   }
