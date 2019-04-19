@@ -1,186 +1,197 @@
-//Constants declaration and assignment
-var IMAGE_WIDTH = 960;
-var AUTO_TRANS_SPEED = 10;
-var EVENT_TRANS_SPEED = 50;
-var PAUSE_DURATION = 500; //In milliseconds
+class ImageButton {
+  constructor(
+    imageName,
+    clickImageName,
+    width,
+    height,
+    leftPositionInPercent,
+    topPositionInPercent
+  ) {
+    this.element = document.createElement("button");
+    this.imageName = imageName;
+    this.clickImageName = clickImageName;
+    this.width = width;
+    this.height = height;
+    this.leftPositionInPercent = leftPositionInPercent;
+    this.topPositionInPercent = topPositionInPercent;
+    this.init();
+  }
 
-//Variables declaration and assignment
-var wrapper = document.getElementById("carouselWrapper");
-var container = document.getElementById("container");
-var totalWrapperWidth = wrapper.childElementCount * IMAGE_WIDTH;
-var minLeft = -(totalWrapperWidth - IMAGE_WIDTH);
-wrapper.style.width = totalWrapperWidth + "px";
-var leftPosition = 0;
-var offset;
-var requestId;
-var indicatorButtons = [];
-var leftButton;
-var rightButton;
-var eventState;
-var eventTravelPosition;
- var isLeftToRight;
+  init() {
+    this.element.style.backgroundColor = "transparent";
+    this.element.style.border = "none";
+    this.element.style.width = this.width + "px";
+    this.element.style.height = this.height + "px";
+    this.element.onfocus = function() {
+      this.element.style.outline = "0";
+    }.bind(this);
+    var image = document.createElement("img");
+    image.setAttribute("src", "images/" + this.imageName);
+    image.style.width = "100%";
+    this.element.appendChild(image);
 
+    this.element.style.position = "absolute";
+    this.element.style.left = this.leftPositionInPercent + "%";
+    this.element.style.top = this.topPositionInPercent + "%";
 
-// Carousel images transition BEGIN
+    this.element.onmouseleave = function() {
+      this.element.childNodes[0].setAttribute(
+        "src",
+        "images/" + this.imageName
+      );
+    }.bind(this);
+    this.element.onmouseenter = function() {
+      this.element.childNodes[0].setAttribute(
+        "src",
+        "images/" + this.clickImageName
+      );
+    }.bind(this);
+  }
 
-//Starts the tranisition animation
-function startTransition() {
-  slide();
-  if (leftPosition % IMAGE_WIDTH == 0 && !eventState) {
-    pauseTransition(requestId);
-  } else {
-    requestId = requestAnimationFrame(startTransition);
+  getButton() {
+    return this.element;
   }
 }
 
-//Slides the wrapper left or right and pauses if leftPosition is zero
-function slide() {
-  if(eventState){
-    var deviation = Math.abs(leftPosition - eventTravelPosition);
-    console.log("Left Position:"+leftPosition+"   ||||||| Event Travel Position:"+ eventTravelPosition + " ||||||| Deviation:"+deviation);
-    if(deviation < IMAGE_WIDTH){
-      eventState = false;
+class Carousel {
+  constructor(containerElement, transitionVelocity) {
+    this.containerElement = containerElement;
+    this.transitionVelocity = transitionVelocity;
+    this.init();
+  }
+
+  init() {
+    this.wrapperElement = this.containerElement.querySelector(".carousel-wrapper");
+
+    this.images = this.containerElement.querySelectorAll("img");
+    this.numberOfImages = this.images.length;
+
+    //ADDING FIRST IMAGE AT THE BACK AND LAST IMAGE AT THE FIRST FOR LOOP EFFECT IN CAROUSEL
+    let fakeFirstImage =  this.images[0].cloneNode(true);
+    let fakeLastImage = this.images[this.numberOfImages-1].cloneNode(true);
+    this.wrapperElement.insertBefore(fakeLastImage, this.images[0]);
+    this.wrapperElement.appendChild(fakeFirstImage);
+    this.numberOfImagesIncludingFakes = this.numberOfImages + 2;
+
+    this.windowSize = this.images[0].width;
+    
+    this.wrapperSize = this.windowSize * (this.numberOfImages+2);
+
+    this.wrapperElement.style.width = this.wrapperSize + "px";
+
+    this.currentPosition = -960;
+    this.counter = 1;
+    this.transitionState = false;
+
+    this.leftButtonSetup();
+    this.rightButtonSetup();
+    this.updateWrapperPosition();
+    this.indicatorButtonsSetup();
+  }
+
+  leftButtonSetup() {
+
+    this.leftButton = new ImageButton(
+      "left.png",
+      "left-click.png",
+      50,
+      50,
+      0,
+      40
+    ).getButton();
+    this.leftButton.onclick = this.back.bind(this);
+    this.containerElement.appendChild(this.leftButton);
+  }
+
+  rightButtonSetup() {
+    this.rightButton = new ImageButton(
+      "right.png",
+      "right-click.png",
+      50,
+      50,
+      95,
+      40
+    ).getButton();
+    this.rightButton.onclick = this.next.bind(this);
+    this.containerElement.appendChild(this.rightButton);
+  }
+
+  back() {
+    if (!this.transitionState) {
+      if(this.counter==1){
+        this.counter = this.numberOfImagesIncludingFakes - 1;
+        this.currentPosition = this.counter * -this.windowSize;
+        this.updateWrapperPosition();
+      }  
+
+      this.transitionState = true;
+      this.counter--;
+      this.slideToNewPosition(this.counter * -this.windowSize);
     }
   }
 
-  if (leftPosition >= 0) {
-    offset = (eventState)? -EVENT_TRANS_SPEED: -AUTO_TRANS_SPEED;
-    isLeftToRight = false;
-  }else if (leftPosition <= minLeft) {
-    offset = (eventState)? EVENT_TRANS_SPEED: AUTO_TRANS_SPEED;
-    isLeftToRight = true;
+  next() {
+    if (!this.transitionState) {
+      if(this.counter == (this.numberOfImagesIncludingFakes -1)){
+        this.counter = 1;
+        this.currentPosition = this.counter * -this.windowSize;
+        this.updateWrapperPosition();
+      }
+
+      this.transitionState = true;
+      this.counter++;
+      this.slideToNewPosition(this.counter * -this.windowSize);
+    }
   }
 
-  if (leftPosition == 0 && !eventState) {
-    setTimeout(function() {
-      leftPosition += offset;
-      updateWrapperPosition(leftPosition);
-    }, PAUSE_DURATION);
-  } else {
-     leftPosition += offset;
-      updateWrapperPosition(leftPosition);
+  indicatorButtonsSetup() {
+    this.indicatorButtons = [];
+    for (let i = 0; i < this.images.length; i++) {
+      let button = new ImageButton(
+        "icon-circle.png",
+        "icon-circle-click.png",
+        20,
+        20,
+        50 + i * 2,
+        90
+      ).getButton();
+      button.index = i;
+      this.indicatorButtons.push(button);
+      container.appendChild(button);
+    }
+  }
+
+  slideToNewPosition(newPosition) {
+    if (this.getDistanceFromCurrentPosition(newPosition) === 0) {
+      this.transitionState = false;
+      cancelAnimationFrame(this.rafID);
+    } else {
+      if (newPosition > this.currentPosition) {
+        this.currentPosition += this.transitionVelocity;
+      } else {
+        this.currentPosition -= this.transitionVelocity;
+      }
+      this.updateWrapperPosition();
+      this.rafID = requestAnimationFrame(() =>
+        this.slideToNewPosition(newPosition)
+      );
+    }
+  }
+
+  getDistanceFromCurrentPosition(newPosition) {
+    if (newPosition > this.currentPosition) {
+      return newPosition - this.currentPosition;
+    } else if (newPosition < this.currentPosition) {
+      return this.currentPosition - newPosition;
+    } else {
+      return 0;
+    }
+  }
+
+  updateWrapperPosition() {
+    this.wrapperElement.style.left = this.currentPosition + "px";
   }
 }
 
-//Updates wrapper position
-function updateWrapperPosition(leftPosition) {
-  wrapper.style.left = leftPosition + "px";
-}
-
-//pauses transition of a second
-function pauseTransition(requestId) {
-  window.cancelAnimationFrame(requestId);
-  setTimeout(function() {
-    startTransition();
-  }, PAUSE_DURATION);
-}
-
-// Carousel images transition animation END
-
-//Returns an image button element with different image when clicked
-
-
-//Buttons setup BEGIN
-
-//LEFT BUTTON
-leftButton = createButtonWithImage("left.png", "left-click.png", 50, 50, 0, 40);
-
-leftButton.onclick = function(){
-  leftPosition = (leftPosition >= -IMAGE_WIDTH)? minLeft:(leftPosition - (leftPosition % IMAGE_WIDTH)) + IMAGE_WIDTH; 
-  updateWrapperPosition(leftPosition);
-}
-container.appendChild(leftButton);
-
-//RIGHT BUTTON
-rightButton = createButtonWithImage(
-  "right.png",
-  "right-click.png",
-  50,
-  50,
-  95,
-  40
-);
-
-rightButton.onclick = function() {
-  leftPosition = (leftPosition <= (minLeft-IMAGE_WIDTH))? 0: (leftPosition - (leftPosition % IMAGE_WIDTH)) - IMAGE_WIDTH; 
-  console.log(leftPosition);
-  updateWrapperPosition(leftPosition);
-};
-container.appendChild(rightButton);
-
-
-//INDICATOR BUTTONS
-for (i = 0; i < wrapper.childElementCount; i++) {
-  indicatorButtons.push(
-    createButtonWithImage(
-      "icon-circle.png",
-      "icon-circle-click.png",
-      20,
-      20,
-      50 + i * 2,
-      90
-    )
-  ); 
-}
-
-indicatorButtons[0].onclick = function(){
-  leftPosition = 0 * (-IMAGE_WIDTH);
-  updateWrapperPosition(leftPosition);
-}
-container.appendChild(indicatorButtons[0]);
-
-indicatorButtons[1].onclick = function(){
-  leftPosition = 1 * (-IMAGE_WIDTH);
-  updateWrapperPosition(leftPosition);
-}
-container.appendChild(indicatorButtons[1]);
-
-indicatorButtons[2].onclick = function(){
-  leftPosition = 2 * (-IMAGE_WIDTH);
-  updateWrapperPosition(leftPosition);
-}
-container.appendChild(indicatorButtons[2]);
-
-
-//Buttons setup END
-
-function createButtonWithImage(
-  imageName,
-  clickImageName,
-  width,
-  height,
-  leftPositionInPercent,
-  topPositionInPercent
-) {
-  var button = document.createElement("button");
-  button.style.backgroundColor = "transparent";
-  button.style.border = "none";
-  button.style.width = width + "px";
-  button.style.height = height + "px";
-  button.onfocus = function() {
-    button.style.outline = "0";
-  };
-  var image = document.createElement("img");
-  image.setAttribute("src", "images/" + imageName);
-  image.style.width = "100%";
-  button.appendChild(image);
-
-  button.style.position = "absolute";
-  button.style.left = leftPositionInPercent + "%";
-  button.style.top = topPositionInPercent + "%";
-
-  button.onmouseleave = function() {
-    button.childNodes[0].setAttribute("src", "images/" + imageName);
-  };
-  button.onmouseenter = function() {
-    button.childNodes[0].setAttribute("src", "images/" + clickImageName);
-  };
-
-  
-
-
-  return button;
-}
-
-startTransition();
-
+let carouselContainer = document.getElementById("container");
+let carousel = new Carousel(carouselContainer, 10);
