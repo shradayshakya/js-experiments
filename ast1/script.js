@@ -115,7 +115,7 @@ class Carousel {
       0,
       40
     ).getButton();
-    this.leftButton.onclick = this.back.bind(this);
+    this.leftButton.onclick = this.gotoPreviousSlide.bind(this);
     this.containerElement.appendChild(this.leftButton);
   }
 
@@ -128,7 +128,7 @@ class Carousel {
       95,
       40
     ).getButton();
-    this.rightButton.onclick = this.next.bind(this);
+    this.rightButton.onclick = this.gotoNextSlide.bind(this);
     this.containerElement.appendChild(this.rightButton);
   }
   
@@ -151,8 +151,7 @@ class Carousel {
   }
 
   //triggers when left button is clicked
-  back() {
-    console.log(this.counter); 
+  gotoPreviousSlide() {
     if (!this.transitionState) {
       if(this.counter==1){
         this.counter = this.numberOfImagesIncludingFakes - 1;
@@ -167,7 +166,7 @@ class Carousel {
   }
 
   //triggers when right button is clicked
-  next() {
+  gotoNextSlide() {
     if (!this.transitionState) {
       if(this.counter == (this.numberOfImagesIncludingFakes -2)){
         this.counter = 0;

@@ -128,12 +128,10 @@ class Canvas {
     return Math.floor(Math.random() * (max - min + 1) + min);
   }
 
-
-
   start() {
     this.circles = [];
-    for (let i = 0; i < 500; i++) {
-      let radius = 5;
+    for (let i = 0; i < 10; i++) {
+      let radius = 15;
       let x = this.randomIntFromInterval(radius * 2, this.width - radius * 2);
       let y = this.randomIntFromInterval(radius * 2, this.width - radius * 2);
       let xVelocity = (Math.random() - 0.5) * 10;
