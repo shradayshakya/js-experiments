@@ -1,3 +1,18 @@
 *{
     margin: 0px;
 }
+
+@font-face {
+    font-family: 'flappyBird';
+    src: url('font/flappy_bird-webfont.woff2') format('woff2'),
+         url('font/flappy_bird-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+p{
+    background: red;
+    color: white;
+    font-family: 'flappyBird';
+}

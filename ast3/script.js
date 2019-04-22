@@ -11,8 +11,12 @@ class FlappyBirdCanvas {
 
   //Defining canvas height and width, canvas' context and loading images and audio
   init() {
+
+    this.beginScreen = true;
+
     //loading images
     this.loadImages();
+    this.loadAudios();
 
     //declaring size and widths of objects
     this.birdHeight = 24;
@@ -26,44 +30,57 @@ class FlappyBirdCanvas {
 
     this.PIPE_BOTTOM_CONSTANT = this.pipeTopHeight + this.gapBetweenPipes;
 
-    //declaring initial positions of objects
-    this.birdPositionX = 100;
-    this.birdPositionY = this.CANVAS_HEIGHT / 2;
+    this.setBirdToInitialPosition();
 
-    this.gravity = 1.5;
+    //vertical movement of the bird
+    this.gravity = 1.8;
 
     this.pipes = [];
     this.pipes[0] = {
       x: this.CANVAS_WIDTH,
       y: -100
-    }
+    };
 
     //adding event listeners
-    document.addEventListener('keyup', function(event){
-      if(event.key === ' '){
-        this.birdPositionY -= 42;
-      }
-    }.bind(this));
-}  
-  
+    document.addEventListener(
+      "keyup",
+      function(event) {
+        if (event.key === " ") {
+          if(this.beginScreen){
+            this.setPipesToInitialStates();
+            this.score = 0;
+            this.beginScreen = false;
+          }
+          this.wingAudio.play();
+          this.birdPositionY -= 42;
+        }
+      }.bind(this)
+    );
+
+    //Score
+      this.score = 0;
+  }
+
+  setPipesToInitialStates(){
+    this.pipes = [];
+    this.pipes[0] = {
+      x: this.CANVAS_WIDTH,
+      y: -100
+    };
+  }
+
+  setBirdToInitialPosition(){
+    //declaring initial positions of objects
+    this.birdPositionX = 100;
+    this.birdPositionY = this.CANVAS_HEIGHT / 2;
+  }
+
   //Game starts from here
   playGame() {
     this.drawObjects();
-    requestAnimationFrame(()=>this.playGame());
+    requestAnimationFrame(() => this.playGame());
   }
 
-  collisionDetection(pipe){
-    //if bird touches the ground
-      if(this.birdPositionY + this.birdHeight >= this.CANVAS_HEIGHT - this.baseHeight){
-        location.reload();
-      } 
-
-      //if bird touches or is in inside the area of pipes
-      console.log();
-      if(this.birdPositionX+this.birdWidth >= pipe.x && this.birdPositionX <= pipe.x +this.pipeWidth && (this.birdPositionY <= pipe.y + this.pipeTopHeight || this.birdPositionY+this.birdHeight >= pipe.y + this.PIPE_BOTTOM_CONSTANT)){
-        location.reload();
-      }
-  }
 
   //this is where images are loaded and drawn in the canvas, images need to be loaded before they are drawn
   drawObjects() {
@@ -75,40 +92,99 @@ class FlappyBirdCanvas {
       this.CANVAS_HEIGHT
     );
 
+    if(!this.beginScreen){
     this.drawPipes();
+    this.applyGravity();
+    this.drawScore();
+    }else{
+      this.ctx.font = "20px flappyBird";  
+      this.ctx.textBaseline = 'top';
+      this.ctx.fillStyle = "white";
+      this.ctx.fillText("SPACE TO START", 60, 50);
+      if(this.score > 0){
+        this.ctx.font = "15px flappyBird";  
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillStyle = "white";
+       this.ctx.fillText("Your score is "+this.score, 80, 100);
+      }
+    }
 
-    this.ctx.drawImage(this.baseImage,0, this.CANVAS_HEIGHT-this.baseImage.height)
+    this.ctx.drawImage(
+      this.baseImage,
+      0,
+      this.CANVAS_HEIGHT - this.baseImage.height
+    );
 
     this.drawBird();
   }
 
-  drawBird() {
-    this.ctx.drawImage(this.birdImage, this.birdPositionX, this.birdPositionY);
-
-    this.birdPositionY += this.gravity;
+  drawScore(){
+    this.ctx.font = "50px flappyBird";  
+    this.ctx.textBaseline = 'top';
+    this.ctx.fillStyle = "white";
+    this.ctx.fillText(this.score, this.CANVAS_WIDTH/2 - 15, 50);
   }
 
   drawPipes() {
-    for(let i = 0; i <  this.pipes.length ; i++){
-      if(this.pipes[i].x <= -this.pipeWidth){
+    for (let i = 0; i < this.pipes.length; i++) {
+      if (this.pipes[i].x <= -this.pipeWidth) {
         this.pipes.shift();
         i--;
-      }
-      else{
+      } else {
         this.ctx.drawImage(this.pipeTopImage, this.pipes[i].x, this.pipes[i].y);
-        this.ctx.drawImage(this.pipeBottomImage, this.pipes[i].x, this.pipes[i].y + this.PIPE_BOTTOM_CONSTANT);
-        if(this.pipes[i].x ==125){
-          let limit = 20;
+        this.ctx.drawImage(
+          this.pipeBottomImage,
+          this.pipes[i].x,
+          this.pipes[i].y + this.PIPE_BOTTOM_CONSTANT
+        );
+        if (this.pipes[i].x == 125) {
           this.pipes.push({
             x: this.CANVAS_WIDTH,
-            y: Math.floor(Math.random()* this.pipeTopHeight)-this.pipeTopHeight +5
+            y:
+              Math.floor(Math.random() * this.pipeTopHeight) -
+              this.pipeTopHeight +
+              5
           });
         }
-        
-      this.collisionDetection(this.pipes[i]);
-        this.pipes[i].x-=1;
+        if(this.pipes[i].x == 55){
+          this.pointAudio.play();
+          this.score++;
+        }
+
+        this.collisionDetection(this.pipes[i]);
+        this.pipes[i].x -= 1;
       }
     }
+  }
+
+  drawBird() {
+    this.ctx.drawImage(this.birdImage, this.birdPositionX, this.birdPositionY);
+  }
+
+  applyGravity(){
+    this.birdPositionY += this.gravity;
+  }
+
+  
+  collisionDetection(pipe) {
+    //if bird touches the ground
+    let hasBirdTouchedTheGround =  this.birdPositionY + this.birdHeight >= this.CANVAS_HEIGHT - this.baseHeight;
+    
+      //if bird touches or is in inside the area of pipes
+    let hasBirdTouchedOrIsInsideAPipe = this.birdPositionX + this.birdWidth >= pipe.x 
+                                                            &&
+                                        this.birdPositionX <= pipe.x + this.pipeWidth 
+                                                            &&
+                                        (this.birdPositionY <= pipe.y + this.pipeTopHeight 
+                                                            ||
+                                        this.birdPositionY + this.birdHeight >= pipe.y + this.PIPE_BOTTOM_CONSTANT);
+    
+      if (hasBirdTouchedTheGround || hasBirdTouchedOrIsInsideAPipe)
+      {
+        this.setBirdToInitialPosition();
+        this.dieAudio.play();
+        this.beginScreen = true;
+      }
   }
 
   //loads all the images
@@ -118,16 +194,30 @@ class FlappyBirdCanvas {
     this.pipeTopImage = this.getImageElement("sprites/pipe-top.png");
     this.pipeBottomImage = this.getImageElement("sprites/pipe-bottom.png");
     this.baseImage = this.getImageElement("sprites/base.png");
+
   }
 
-//accepts image source and return image element
+  loadAudios(){
+    this.dieAudio = this.getAudioElement("audio/die.wav");
+    this.hitAudio = this.getAudioElement("audio/hit.wav");
+    this.swooshAudio = this.getAudioElement("audio/swoosh.wav");
+    this.wingAudio = this.getAudioElement("audio/wing.wav");
+    this.pointAudio = this.getAudioElement("audio/point.wav");
+
+  }
+
+  //accepts image source and return image element
   getImageElement(src) {
-    var image = new Image();
+    let image = new Image();
     image.src = src;
     return image;
   }
+
+  //accepts audio source and return audio element
+  getAudioElement(src) {
+    let audio = new Audio();
+    audio.src = src;
+    return audio;
+  }
 }
 
-var canvas = document.getElementById("canvas");
-var flappyBirdCanvas = new FlappyBirdCanvas(canvas);
-flappyBirdCanvas.playGame();
