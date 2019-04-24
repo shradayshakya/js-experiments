@@ -70,7 +70,7 @@ class Pipe {
   }
 }
 
-class FlappyBirdCanvas {
+class FlappyBirdGameWOrld {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = this.canvas.getContext("2d");
@@ -110,7 +110,7 @@ class FlappyBirdCanvas {
     document.addEventListener(
       "keyup",
       function(event) {
-				if(event.key == "Enter"){
+				if(event.keyCode === 13){
 					if(this.beginScreen){
 						this.pipes = [];
 						this.pipes.push(new Pipe(this.CANVAS_WIDTH, 0));
@@ -118,7 +118,7 @@ class FlappyBirdCanvas {
             this.beginScreen = false;
 					}
 				}
-        if (event.key === " " && !this.beginScreen) {
+        if (event.keyCode === 32 && !this.beginScreen) {
           this.bird.wingAudio.play();
           this.bird.yPosition += this.bird.FLY_DISTANCE;
         }
@@ -162,7 +162,7 @@ class FlappyBirdCanvas {
      	 } else {
 				
 			
-				if(this.collisionDetection(this.bird, this.pipes[i])){
+				if(this.detectCollision(this.bird, this.pipes[i])){
 					this.bird.xPosition = 100;
 					this.bird.yPosition = this.CANVAS_HEIGHT/2 -15;
 					this.bird.dieAudio.play();
@@ -192,12 +192,12 @@ class FlappyBirdCanvas {
     }
 	}
 	
-	collisionDetection(bird, pipe) {
+	detectCollision(bird, pipe) {
     //if bird touches the ground
-    let hasBirdTouchedTheGround =  bird.yPosition + bird.HEIGHT >= this.CANVAS_HEIGHT - this.foreground.height;
+    let hasBirdCollidedWithTheGround =  bird.yPosition + bird.HEIGHT >= this.CANVAS_HEIGHT - this.foreground.height;
 		
       //if bird touches or is in inside the area of pipes
-    let hasBirdTouchedOrIsInsideAPipe = bird.xPosition + bird.WIDTH >= pipe.xPosition 
+    let hasBirdCollidedWithAPipe = bird.xPosition + bird.WIDTH >= pipe.xPosition 
                                                             &&
                                         bird.xPosition <= pipe.xPosition + pipe.WIDTH 
                                                             &&
@@ -205,7 +205,7 @@ class FlappyBirdCanvas {
                                                             ||
                                         bird.yPosition + bird.HEIGHT >= pipe.yPosition + pipe.LOWER_PIPE_VERTICAL_OFFSET);
     
-      if(hasBirdTouchedTheGround || hasBirdTouchedOrIsInsideAPipe) return true;
+      if(hasBirdCollidedWithTheGround || hasBirdCollidedWithAPipe) return true;
 		return false;
   }
 

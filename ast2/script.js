@@ -130,7 +130,7 @@ class Canvas {
 
   start() {
     this.circles = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 50; i++) {
       let radius = 15;
       let x = this.randomIntFromInterval(radius * 2, this.width - radius * 2);
       let y = this.randomIntFromInterval(radius * 2, this.width - radius * 2);
