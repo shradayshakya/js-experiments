@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Assignment 2</title>
-    <link rel="stylesheet" href="./style.css">
-</head>
-<body>
-    <canvas id="canvas">
-    </canvas>
-    
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <canvas id="canvas"> </canvas>
+
     <script src="Circle.js"></script>
     <script src="Canvas.js"></script>
     <script>
-        let canvasElement = document.getElementById("canvas");
-        // Canvas constructor arguments: 
-        // 1. Canvas element
-        // 2. Width of canvas
-        // 3. Height of canvas 
-        // 4. Number of balls 
-        // 5. Speed 
-        let canvas = new Canvas(canvasElement, 1000, 550, 500, 10) ; 
-        canvas.start();
+      let canvasElement = document.getElementById("canvas");
+      // Canvas constructor arguments:
+      // 1. Canvas element
+      // 2. Width of canvas
+      // 3. Height of canvas
+      // 4. Number of balls
+      // 5. Speed
+      let canvas = new Canvas(canvasElement, 1000, 550, 500, 10);
+      canvas.start();
     </script>
-</body>
+  </body>
 </html>

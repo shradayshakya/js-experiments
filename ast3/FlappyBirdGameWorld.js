@@ -32,11 +32,10 @@ class FlappyBirdGameWorld {
   init() {
     let birdInitialPositionX = 100;
     let birdInitialPositionY = 200;
-    let pipeInitialPositionX = this.CANVAS_WIDTH;
-    let pipeInitialPositionY = 0;
+    this.pipeInitialPositionX = this.CANVAS_WIDTH;
+    this.pipeInitialPositionY = -100;
 
     this.bird = new Bird(birdInitialPositionX, birdInitialPositionY);
-    this.pipes.push(new Pipe(pipeInitialPositionX, pipeInitialPositionY)); //A pipe object consist of both upper and lower pipe
 
     this.background = MediaLoader.getImageElement("sprites/background-day.png");
     this.foreground = MediaLoader.getImageElement("sprites/base.png");
@@ -53,7 +52,9 @@ class FlappyBirdGameWorld {
         if (event.keyCode === 13) {
           if (this.beginScreen) {
             this.pipes = [];
-            this.pipes.push(new Pipe(this.CANVAS_WIDTH, 0));
+            this.pipes.push(
+              new Pipe(this.pipeInitialPositionX, this.pipeInitialPositionY)
+            );
             this.score = 0;
             this.beginScreen = false;
           }
@@ -69,10 +70,10 @@ class FlappyBirdGameWorld {
 
   playGame() {
     this.drawObjects();
-    if (this.counter++ % this.bird.FLAP_REFRESH_RATE == 0) {
+    if (this.counter++ % this.bird.FLAP_REFRESH_RATE === 0) {
       this.bird.imageFlag++;
     }
-    if (this.counter++ % this.FOREGROUND_REFRESH_RATE == 0) {
+    if (this.counter++ % this.FOREGROUND_REFRESH_RATE === 0) {
       this.foregroundXPosition = this.FOREGROUND_INITIAL_X_POSITION;
     }
     requestAnimationFrame(() => this.playGame());
@@ -121,7 +122,9 @@ class FlappyBirdGameWorld {
         this.pipes[i].draw(this.ctx);
 
         //Respawing new pair of pipe and random vertical position between 0 and - pipe height
-        if (this.pipes[i].xPosition == this.pipes[i].NEXT_PIPE_SPAWN_DISTANCE) {
+        if (
+          this.pipes[i].xPosition === this.pipes[i].NEXT_PIPE_SPAWN_DISTANCE
+        ) {
           let pipeYOffset = 25;
           let randomYPosition = Math.floor(
             Math.random() * (-pipeYOffset + this.pipes[i].UPPER_PIPE_HEIGHT) -
@@ -131,7 +134,7 @@ class FlappyBirdGameWorld {
           this.pipes.push(new Pipe(this.CANVAS_WIDTH, randomYPosition));
         }
 
-        if (this.pipes[i].xPosition == this.POINT_DISTANCE) {
+        if (this.pipes[i].xPosition === this.POINT_DISTANCE) {
           this.pointAudio.play();
           this.score++;
         }

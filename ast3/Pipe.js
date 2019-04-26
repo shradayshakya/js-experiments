@@ -3,6 +3,7 @@ class Pipe {
     this.xPosition = xPosition;
     this.yPosition = yPosition;
 
+    console.log(this.xPosition, this.yPosition);
     //variables initiated in init
     this.upperPipeImage;
     this.lowerPipeImage;

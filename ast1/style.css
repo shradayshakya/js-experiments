@@ -1,15 +1,17 @@
-#container{
-    overflow: hidden; 
-    width: 960px;
-    height: 330px;
-    position: relative;
+#container {
+  overflow: hidden;
+  width: 960px;
+  height: 330px;
+  position: relative;
 }
-.carousel-wrapper{
-    position: absolute;
-}
-
-.carousel-image{
-    float: left;
+.carousel-wrapper {
+  position: absolute;
 }
 
+.carousel-image {
+  float: left;
+}
 
+.disabled {
+  opacity: 0.2;
+}
