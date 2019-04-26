@@ -10,6 +10,19 @@
 <body>
     <canvas id="canvas">
     </canvas>
-    <script src="./script.js"></script>
+    
+    <script src="Circle.js"></script>
+    <script src="Canvas.js"></script>
+    <script>
+        let canvasElement = document.getElementById("canvas");
+        // Canvas constructor arguments: 
+        // 1. Canvas element
+        // 2. Width of canvas
+        // 3. Height of canvas 
+        // 4. Number of balls 
+        // 5. Speed 
+        let canvas = new Canvas(canvasElement, 1000, 550, 500, 10) ; 
+        canvas.start();
+    </script>
 </body>
 </html>
